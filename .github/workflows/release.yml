@@ -153,10 +153,13 @@ jobs:
           mkdir -p release-assets
           # Backend binaries (single file per artifact)
           find artifacts/backend-* -maxdepth 1 -type f -exec cp {} release-assets/ \;
-          # Electron builds (may have multiple files like .dmg, .exe, .AppImage, plus checksums)
-          find artifacts/kick-sender-macos -type f -exec cp {} release-assets/ \;
-          find artifacts/kick-sender-windows -type f -exec cp {} release-assets/ \;
-          find artifacts/kick-sender-linux -type f -exec cp {} release-assets/ \;
+          # Electron installers only — skip unpacked directories
+          # macOS: .dmg files (universal + arm64)
+          find artifacts/kick-sender-macos -maxdepth 1 -name "*.dmg*" -type f -exec cp {} release-assets/ \;
+          # Windows: NSIS installer
+          find artifacts/kick-sender-windows -maxdepth 1 -name "Kick.Sender.Setup*.exe*" -type f -exec cp {} release-assets/ \;
+          # Linux: AppImage
+          find artifacts/kick-sender-linux -maxdepth 1 -name "*.AppImage*" -type f -exec cp {} release-assets/ \;
           echo "=== Release assets ==="
           ls -lh release-assets/
 
