@@ -1,0 +1,38 @@
+# Binaries
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+kick-interval
+
+# Test artifacts
+*.out
+coverage.out
+coverage.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Go
+vendor/
+
+# Node
+node_modules/
+
+# Temp files
+*.tmp
+*.bak
+
+# Documentation (internal only)
+project.md

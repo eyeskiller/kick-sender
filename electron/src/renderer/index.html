@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kick Sender</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="icon-128.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ONBOARDING OVERLAY -->
+  <div id="onboarding" class="onboarding">
+    <div class="onboarding-inner">
+      <div class="onboarding-logo">
+        <div class="brand-logo-wrap">
+          <img src="logo.png" alt="Kick Sender" class="brand-logo">
+        </div>
+        <p class="onboarding-tagline" data-i18n="ob.tagline">Let's get you set up</p>
+      </div>
+
+      <!-- Step indicators -->
+      <div class="ob-steps">
+        <div class="ob-step active" data-step="1"><span class="ob-step-num">1</span><span class="ob-step-label" data-i18n="ob.step.app">Kick App</span></div>
+        <div class="ob-step-line"></div>
+        <div class="ob-step" data-step="2"><span class="ob-step-num">2</span><span class="ob-step-label" data-i18n="ob.step.creds">Credentials</span></div>
+        <div class="ob-step-line"></div>
+        <div class="ob-step" data-step="3"><span class="ob-step-num">3</span><span class="ob-step-label" data-i18n="ob.step.auth">Auth</span></div>
+        <div class="ob-step-line"></div>
+        <div class="ob-step" data-step="4"><span class="ob-step-num">4</span><span class="ob-step-label" data-i18n="ob.step.config">Configure</span></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="ob-panel active" data-panel="1">
+        <h2 data-i18n="ob.s1.title">1. Create a Kick Developer App</h2>
+        <p class="ob-desc" data-i18n="ob.s1.desc">This app needs API access to your Kick account.</p>
+        <div class="ob-instructions">
+          <div class="ob-instr-row">
+            <span class="ob-instr-num">1</span>
+            <span data-i18n-html="ob.s1.i1">Go to kick.com/settings/developer</span>
+          </div>
+          <div class="ob-instr-row">
+            <span class="ob-instr-num">2</span>
+            <span data-i18n-html="ob.s1.i2">Enable 2FA on your Kick account</span>
+          </div>
+          <div class="ob-instr-row">
+            <span class="ob-instr-num">3</span>
+            <span data-i18n-html="ob.s1.i3">Click "Create App" and give it any name</span>
+          </div>
+          <div class="ob-instr-row">
+            <span class="ob-instr-num">4</span>
+            <span><span data-i18n="ob.s1.i4">Set the Redirect URL to:</span><br><code data-i18n="ob.s1.i4.code">http://localhost:8765/callback</code></span>
+          </div>
+          <div class="ob-instr-row">
+            <span class="ob-instr-num">5</span>
+            <span data-i18n-html="ob.s1.i5">Copy your Client ID and Client Secret</span>
+          </div>
+        </div>
+        <div class="ob-actions">
+          <button id="obOpenPortal" class="btn btn-secondary" data-i18n="ob.s1.open_portal">Open Developer Portal</button>
+          <button class="btn ob-next" data-next="2" data-i18n="ob.s1.next">I've created my app</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="ob-panel" data-panel="2">
+        <h2 data-i18n="ob.s2.title">2. Enter your credentials</h2>
+        <p class="ob-desc" data-i18n="ob.s2.desc">Paste the Client ID and Client Secret from your Kick Developer App.</p>
+        <div class="ob-form">
+          <label class="ob-label" data-i18n="ob.s2.client_id">Client ID</label>
+          <input type="text" id="obClientId" class="ob-input" data-i18n-placeholder="ob.s2.client_id_ph" placeholder="Client ID" autocomplete="off">
+          <label class="ob-label" data-i18n="ob.s2.client_secret">Client Secret</label>
+          <input type="password" id="obClientSecret" class="ob-input" data-i18n-placeholder="ob.s2.client_secret_ph" placeholder="Client Secret" autocomplete="off">
+          <label class="ob-label"><span data-i18n="ob.s2.redirect">Redirect URL</span> <span class="ob-optional" data-i18n="ob.s2.redirect_opt">(optional)</span></label>
+          <input type="text" id="obRedirectUri" class="ob-input" data-i18n-placeholder="ob.s2.redirect_ph" placeholder="http://localhost:8765/callback" value="http://localhost:8765/callback">
+        </div>
+        <div id="obCredError" class="ob-error"></div>
+        <div class="ob-actions">
+          <button class="btn ob-back" data-back="1">&larr; <span data-i18n="btn.back_short">Back</span></button>
+          <button id="obSaveCreds" class="btn ob-next" data-next="3" data-i18n="ob.s2.save">Save & Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="ob-panel" data-panel="3">
+        <h2 data-i18n="ob.s3.title">3. Authenticate with Kick</h2>
+        <p class="ob-desc" data-i18n="ob.s3.desc">Click below to open your browser and authorize the app.</p>
+        <div class="ob-auth-status" id="obAuthStatus">
+          <span class="status-indicator" id="obAuthIndicator"></span>
+          <span id="obAuthText" data-i18n="ob.s3.ready">Ready to authenticate</span>
+        </div>
+        <div class="ob-actions">
+          <button class="btn ob-back" data-back="2">&larr; <span data-i18n="btn.back_short">Back</span></button>
+          <button id="obStartAuth" class="btn" data-i18n="ob.s3.auth_btn">Open Browser & Authenticate</button>
+        </div>
+        <div id="obAuthWait" class="ob-wait" style="display:none;">
+          <div class="ob-spinner"></div>
+          <span data-i18n="ob.s3.wait_text">Waiting for authentication...</span>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="ob-panel" data-panel="4">
+        <h2 data-i18n="ob.s4.title">4. Configure your sender</h2>
+        <p class="ob-desc" data-i18n="ob.s4.desc">Set up your channel, message, and interval.</p>
+        <div class="ob-form">
+          <label class="ob-label" data-i18n="ob.s4.channel">Target channel</label>
+          <input type="text" id="obChannel" class="ob-input" data-i18n-placeholder="ob.s4.channel_ph" placeholder="username or URL">
+          <label class="ob-label" data-i18n="ob.s4.message">Message to send</label>
+          <input type="text" id="obMessage" class="ob-input" data-i18n-placeholder="ob.s4.message_ph" placeholder="Message..." maxlength="500">
+          <label class="ob-label" data-i18n="ob.s4.interval">Send interval</label>
+          <div class="ob-presets">
+            <button class="preset-btn" data-value="1m"></button>
+            <button class="preset-btn" data-value="5m"></button>
+            <button class="preset-btn active" data-value="10m"></button>
+            <button class="preset-btn" data-value="15m"></button>
+            <button class="preset-btn" data-value="30m"></button>
+            <button class="preset-btn" data-value="1h"></button>
+          </div>
+          <input type="text" id="obInterval" class="ob-input" data-i18n-placeholder="ob.s4.interval_ph" placeholder="Custom interval" value="10m">
+        </div>
+        <div id="obConfigError" class="ob-error"></div>
+        <div class="ob-actions">
+          <button class="btn ob-back" data-back="3">&larr; <span data-i18n="btn.back_short">Back</span></button>
+          <button id="obFinish" class="btn" data-i18n="ob.s4.finish">Start Using Kick Sender</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="container" id="mainApp" style="display:none;">
+    <header>
+      <div class="logo">
+        <div class="logo-pill">
+          <img src="logo.png" alt="Kick Sender" class="header-logo">
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="header-auth" id="headerAuth">
+          <span class="status-indicator sm" id="headerAuthIndicator"></span>
+          <span id="headerAuthText">...</span>
+        </span>
+        <button id="settingsBtn" class="settings-btn" data-i18n-title="settings.title" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 data-i18n="settings.title">Settings</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-section">
+            <h3 data-i18n="settings.language">Language</h3>
+            <select id="langSelect" class="lang-select">
+              <option value="en">English</option>
+              <option value="cs">Czech</option>
+              <option value="sk">Slovak</option>
+            </select>
+          </div>
+          <div class="settings-section">
+            <h3 data-i18n="settings.reset">Reset Options</h3>
+            <div class="settings-option">
+              <div class="option-info">
+                <h4 data-i18n="settings.clear_auth">Clear Authentication</h4>
+                <p data-i18n="settings.clear_auth_desc">Remove OAuth tokens</p>
+              </div>
+              <button id="clearAuthBtn" class="btn btn-sm btn-warning" data-i18n="btn.clear">Clear</button>
+            </div>
+            <div class="settings-option">
+              <div class="option-info">
+                <h4 data-i18n="settings.clear_config">Clear Settings</h4>
+                <p data-i18n="settings.clear_config_desc">Remove channel, message, interval</p>
+              </div>
+              <button id="clearConfigBtn" class="btn btn-sm btn-warning" data-i18n="btn.clear">Clear</button>
+            </div>
+            <div class="settings-option">
+              <div class="option-info">
+                <h4 data-i18n="settings.reset_all">Reset Everything</h4>
+                <p data-i18n="settings.reset_all_desc">Clear all data including Kick Developer App credentials</p>
+              </div>
+              <button id="resetAllBtn" class="btn btn-sm btn-danger" data-i18n="btn.reset_all">Reset All</button>
+            </div>
+          </div>
+          <div class="settings-section">
+            <h3 data-i18n="settings.about">About</h3>
+            <div class="about-info">
+              <p><span data-i18n="settings.version">Version</span>: 0.1.0</p>
+              <p><span data-i18n="settings.backend">Backend</span>: <span id="backendPort">18765</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <div class="grid">
+        <div class="column">
+          <!-- Channel -->
+          <section class="card">
+            <div class="card-header">
+              <h2 data-i18n="main.channel">Channel</h2>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <input type="text" id="channel" data-i18n-placeholder="main.channel_ph" placeholder="username or URL">
+                <button id="setChannelBtn" class="btn btn-sm" data-i18n="btn.set">Set</button>
+              </div>
+              <p class="help-text" data-i18n="main.channel_help">Kick channel to send messages to.</p>
+              <div id="channelStatus" class="status-message"></div>
+            </div>
+          </section>
+
+          <!-- Message -->
+          <section class="card">
+            <div class="card-header">
+              <h2 data-i18n="main.message">Message</h2>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <input type="text" id="message" data-i18n-placeholder="main.message_ph" placeholder="Message..." maxlength="500">
+                <button id="setMessageBtn" class="btn btn-sm" data-i18n="btn.set">Set</button>
+              </div>
+              <p class="help-text" data-i18n="main.message_help">Repeated message. Max 500 characters, 2048 bytes.</p>
+              <div id="messageStatus" class="status-message"></div>
+            </div>
+          </section>
+
+          <!-- Interval -->
+          <section class="card">
+            <div class="card-header">
+              <h2 data-i18n="main.interval">Interval</h2>
+            </div>
+            <div class="card-body">
+              <div class="interval-presets">
+                <button class="preset-btn" data-value="1m"></button>
+                <button class="preset-btn" data-value="5m"></button>
+                <button class="preset-btn" data-value="10m"></button>
+                <button class="preset-btn" data-value="15m"></button>
+                <button class="preset-btn" data-value="30m"></button>
+                <button class="preset-btn" data-value="1h"></button>
+              </div>
+              <div class="input-group">
+                <input type="text" id="interval" data-i18n-placeholder="main.interval_ph" placeholder="Custom interval">
+                <button id="setIntervalBtn" class="btn btn-sm" data-i18n="btn.set">Set</button>
+              </div>
+              <p class="help-text" data-i18n="main.interval_help">How often to send. Min 60s.</p>
+              <div id="intervalStatus" class="status-message"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="column">
+          <!-- Status -->
+          <section class="card status-card">
+            <div class="card-header">
+              <h2 data-i18n="main.status">Status</h2>
+            </div>
+            <div class="card-body">
+              <div class="status-grid">
+                <div class="status-item">
+                  <span class="status-label" data-i18n="main.state">State</span>
+                  <span id="runningStatus" class="status-value badge" data-i18n="main.stopped">Stopped</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label" data-i18n="main.sent">Sent</span>
+                  <span id="messagesSent" class="status-value">0</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label" data-i18n="main.next_in">Next in</span>
+                  <span id="nextSend" class="status-value">-</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label" data-i18n="main.failed">Failed</span>
+                  <span id="failedCount" class="status-value sm">0</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Controls -->
+          <section class="card">
+            <div class="card-body compact">
+              <div class="control-buttons">
+                <button id="startBtn" class="btn btn-start" data-i18n="btn.start">Start Sending</button>
+                <button id="stopBtn" class="btn btn-stop" disabled data-i18n="btn.stop">Stop</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Logs -->
+          <section class="card logs-card">
+            <div class="card-header">
+              <h2 data-i18n="main.logs">Activity Log</h2>
+            </div>
+            <div class="card-body">
+              <div id="logs" class="logs-container">
+                <div class="log-empty" data-i18n="logs.empty">No activity yet</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p data-i18n="footer">Kick Sender v0.1.0</p>
+    </footer>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

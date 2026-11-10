@@ -1,0 +1,59 @@
+{
+  "name": "kick-sender",
+  "version": "0.1.0",
+  "description": "Automated Kick.com chat message sender",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --mac --win --linux"
+  },
+  "build": {
+    "appId": "com.kicksender.app",
+    "productName": "Kick Sender",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../build",
+        "to": "bin",
+        "filter": ["kick-interval*"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "../assets/KickSender.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "../assets/KickSender.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "../assets/KickSender.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {}
+}
