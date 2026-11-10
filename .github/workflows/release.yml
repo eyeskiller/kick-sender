@@ -156,7 +156,8 @@ jobs:
           # Electron installers only — skip unpacked directories
           # macOS: .dmg files (universal + arm64)
           find artifacts/kick-sender-macos -maxdepth 1 -name "*.dmg*" -type f -exec cp {} release-assets/ \;
-          # Windows: NSIS installer
+          # Windows: NSIS installer (electron-builder uses spaces: "Kick Sender Setup 0.1.0.exe")
+          find artifacts/kick-sender-windows -maxdepth 1 -name "Kick Sender Setup*.exe*" -type f -exec cp {} release-assets/ \;
           find artifacts/kick-sender-windows -maxdepth 1 -name "Kick.Sender.Setup*.exe*" -type f -exec cp {} release-assets/ \;
           # Linux: AppImage
           find artifacts/kick-sender-linux -maxdepth 1 -name "*.AppImage*" -type f -exec cp {} release-assets/ \;
