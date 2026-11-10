@@ -161,7 +161,7 @@ jobs:
           ls -lh release-assets/
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: Kick Sender ${{ github.ref_name }}
