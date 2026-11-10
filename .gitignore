@@ -5,7 +5,7 @@ build/
 *.dll
 *.so
 *.dylib
-kick-interval
+/kick-interval
 
 # Test artifacts
 *.out
