@@ -37,25 +37,29 @@ jobs:
       - name: Run Go tests
         run: go test -v ./...
 
-      - name: Install Electron dependencies
-        run: |
-          cd electron
-          npm ci
-
       - name: Run Go tests with coverage
         run: |
           go test -coverprofile=coverage.out ./...
           go tool cover -func=coverage.out | grep total
 
+      - name: Install Electron dependencies
+        run: |
+          cd electron
+          npm ci
+
       - name: Build backend (Linux)
         if: matrix.os == 'ubuntu-latest'
+        shell: bash
         run: |
+          mkdir -p build
           GOOS=linux GOARCH=amd64 go build -o build/kick-interval-linux ./cmd/kick-interval
           ls -lh build/
 
       - name: Build backend (macOS)
         if: matrix.os == 'macos-latest'
+        shell: bash
         run: |
+          mkdir -p build
           GOOS=darwin GOARCH=amd64 go build -o build/kick-interval-amd64 ./cmd/kick-interval
           GOOS=darwin GOARCH=arm64 go build -o build/kick-interval-arm64 ./cmd/kick-interval
           ls -lh build/

@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-backend:
-    name: Build Backend (${{ matrix.os }}, ${{ matrix.arch }})
+    name: Build Backend (${{ matrix.goos }}, ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -15,19 +15,19 @@ jobs:
           - os: macos-latest
             arch: amd64
             goos: darwin
-            binary: kick-interval-amd64
+            binary: kick-interval-darwin-amd64
           - os: macos-latest
             arch: arm64
             goos: darwin
-            binary: kick-interval-arm64
+            binary: kick-interval-darwin-arm64
           - os: ubuntu-latest
             arch: amd64
             goos: linux
-            binary: kick-interval-linux
+            binary: kick-interval-linux-amd64
           - os: windows-latest
             arch: amd64
             goos: windows
-            binary: kick-interval.exe
+            binary: kick-interval-windows-amd64.exe
 
     steps:
       - name: Checkout code
@@ -40,6 +40,7 @@ jobs:
           cache: true
 
       - name: Build backend
+        shell: bash
         run: |
           mkdir -p build
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.arch }} go build -ldflags "-X main.version=${{ github.ref_name }}" -o build/${{ matrix.binary }} ./cmd/kick-interval
@@ -53,6 +54,8 @@ jobs:
   build-electron:
     name: Build Electron (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
     strategy:
       matrix:
         include:
@@ -84,6 +87,7 @@ jobs:
           cache-dependency-path: electron/package-lock.json
 
       - name: Build backend binaries for Electron
+        shell: bash
         run: |
           mkdir -p build
           if [ "${{ matrix.os }}" == "macos-latest" ]; then
@@ -95,21 +99,37 @@ jobs:
             GOOS=linux GOARCH=amd64 go build -o build/kick-interval-linux ./cmd/kick-interval
           fi
 
+      - name: Install Linux build dependencies
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools squashfs-tools desktop-file-utils
+
       - name: Install Electron dependencies
+        shell: bash
         run: |
           cd electron
           npm ci
 
       - name: Build Electron app
+        shell: bash
         run: |
           cd electron
           ${{ matrix.build_cmd }}
+
+      - name: List Electron build output
+        shell: bash
+        run: |
+          echo "--- Contents of electron/dist/ ---"
+          ls -lh electron/dist/ || echo "(no dist dir)"
 
       - name: Upload Electron artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: electron/dist/
+          if-no-files-found: warn
 
   release:
     name: Create Release
@@ -127,19 +147,25 @@ jobs:
         with:
           path: artifacts
 
+      - name: Flatten artifacts for release
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          # Backend binaries (single file per artifact)
+          find artifacts/backend-* -maxdepth 1 -type f -exec cp {} release-assets/ \;
+          # Electron builds (may have multiple files like .dmg, .exe, .AppImage, plus checksums)
+          find artifacts/kick-sender-macos -type f -exec cp {} release-assets/ \;
+          find artifacts/kick-sender-windows -type f -exec cp {} release-assets/ \;
+          find artifacts/kick-sender-linux -type f -exec cp {} release-assets/ \;
+          echo "=== Release assets ==="
+          ls -lh release-assets/
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Kick Sender ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
-          files: |
-            artifacts/backend-darwin-amd64/kick-interval-amd64
-            artifacts/backend-darwin-arm64/kick-interval-arm64
-            artifacts/backend-linux-amd64/kick-interval-linux
-            artifacts/backend-windows-amd64/kick-interval.exe
-            artifacts/kick-sender-macos/**/*
-            artifacts/kick-sender-windows/**/*
-            artifacts/kick-sender-linux/**/*
+          files: release-assets/*
