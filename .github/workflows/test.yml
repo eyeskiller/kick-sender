@@ -37,11 +37,6 @@ jobs:
       - name: Run Go tests
         run: go test -v ./...
 
-      - name: Run Go tests with coverage
-        run: |
-          go test -coverprofile=coverage.out ./...
-          go tool cover -func=coverage.out | grep total
-
       - name: Install Electron dependencies
         run: |
           cd electron
